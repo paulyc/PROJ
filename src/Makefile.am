@@ -7,9 +7,9 @@ check_PROGRAMS = geodtest
 
 AM_CPPFLAGS =	-DPROJ_LIB=\"$(pkgdatadir)\" \
 		-DMUTEX_@MUTEX_SETTING@ -I$(top_srcdir)/include @SQLITE3_CFLAGS@ @TIFF_CFLAGS@ @TIFF_ENABLED_FLAGS@ @CURL_CFLAGS@ @CURL_ENABLED_FLAGS@
-AM_CXXFLAGS =    @CXX_WFLAGS@ @FLTO_FLAG@ @TARGET_CLONES_FMA_FLAGS@
+AM_CXXFLAGS =    @CXX_WFLAGS@ @FLTO_FLAG@
 
-include_HEADERS = proj.h proj_experimental.h proj_constants.h proj_api.h geodesic.h \
+include_HEADERS = proj.h proj_experimental.h proj_constants.h geodesic.h \
 	 proj_symbol_rename.h
 
 EXTRA_DIST = bin_cct.cmake bin_gie.cmake bin_cs2cs.cmake \
@@ -52,7 +52,7 @@ geodtest_LDADD = libproj.la
 
 lib_LTLIBRARIES = libproj.la
 
-libproj_la_LDFLAGS = -no-undefined -version-info 19:0:0
+libproj_la_LDFLAGS = -no-undefined -version-info 21:0:2
 libproj_la_LIBADD = @SQLITE3_LIBS@ @TIFF_LIBS@ @CURL_LIBS@
 
 libproj_la_SOURCES = \
@@ -150,6 +150,7 @@ libproj_la_SOURCES = \
 	projections/gn_sinu.cpp \
 	projections/goode.cpp \
 	projections/igh.cpp \
+	projections/igh_o.cpp \
 	projections/hatano.cpp \
 	projections/loxim.cpp \
 	projections/mbt_fps.cpp \
@@ -179,6 +180,7 @@ libproj_la_SOURCES = \
 	projections/natearth2.cpp \
 	projections/calcofi.cpp \
 	projections/eqearth.cpp \
+	projections/col_urban.cpp \
 	\
 	conversions/axisswap.cpp \
 	conversions/cart.cpp \
@@ -200,20 +202,24 @@ libproj_la_SOURCES = \
 	transformations/defmodel.hpp \
 	transformations/defmodel_exceptions.hpp \
 	transformations/defmodel_impl.hpp \
+	transformations/tinshift.cpp \
+	transformations/tinshift.hpp \
+	transformations/tinshift_exceptions.hpp \
+	transformations/tinshift_impl.hpp \
 	\
 	aasincos.cpp adjlon.cpp \
 	dmstor.cpp auth.cpp \
-	deriv.cpp ell_set.cpp ellps.cpp errno.cpp \
+	deriv.cpp ell_set.cpp ellps.cpp \
 	factors.cpp fwd.cpp init.cpp inv.cpp \
 	list.cpp malloc.cpp mlfn.cpp mlfn.hpp msfn.cpp proj_mdist.cpp \
 	param.cpp phi2.cpp pr_list.cpp \
 	qsfn.cpp strerrno.cpp \
 	tsfn.cpp units.cpp ctx.cpp log.cpp zpoly1.cpp rtodms.cpp \
 	release.cpp gauss.cpp \
-	fileapi.cpp \
+	generic_inverse.cpp \
+	quadtree.hpp \
 	\
-	datums.cpp datum_set.cpp transform.cpp \
-	utils.cpp \
+	datums.cpp datum_set.cpp \
 	mutex.cpp initcache.cpp geodesic.c \
 	strtod.cpp \
 	\

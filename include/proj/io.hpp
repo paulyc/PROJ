@@ -71,6 +71,10 @@ class Datum;
 using DatumPtr = std::shared_ptr<Datum>;
 using DatumNNPtr = util::nn<DatumPtr>;
 
+class DatumEnsemble;
+using DatumEnsemblePtr = std::shared_ptr<DatumEnsemble>;
+using DatumEnsembleNNPtr = util::nn<DatumEnsemblePtr>;
+
 class Ellipsoid;
 using EllipsoidPtr = std::shared_ptr<Ellipsoid>;
 using EllipsoidNNPtr = util::nn<EllipsoidPtr>;
@@ -252,6 +256,8 @@ class PROJ_GCC_DLL WKTFormatter {
     PROJ_INTERNAL void startNode(const std::string &keyword, bool hasId);
     PROJ_INTERNAL void endNode();
 
+    PROJ_INTERNAL bool isAtTopLevel() const;
+
     PROJ_DLL WKTFormatter &simulCurNodeHasId();
 
     PROJ_INTERNAL void addQuotedString(const char *str);
@@ -381,6 +387,10 @@ class PROJ_GCC_DLL PROJStringFormatter {
     PROJ_DLL ~PROJStringFormatter();
     //! @endcond
 
+    PROJ_DLL PROJStringFormatter &setMultiLine(bool multiLine) noexcept;
+    PROJ_DLL PROJStringFormatter &setIndentationWidth(int width) noexcept;
+    PROJ_DLL PROJStringFormatter &setMaxLineLength(int maxLineLength) noexcept;
+
     PROJ_DLL void setUseApproxTMerc(bool flag);
 
     PROJ_DLL const std::string &toString() const;
@@ -438,6 +448,10 @@ class PROJ_GCC_DLL PROJStringFormatter {
     PROJ_INTERNAL void pushOmitZUnitConversion();
     PROJ_INTERNAL void popOmitZUnitConversion();
     PROJ_INTERNAL bool omitZUnitConversion() const;
+
+    PROJ_INTERNAL void pushOmitHorizontalConversionInVertTransformation();
+    PROJ_INTERNAL void popOmitHorizontalConversionInVertTransformation();
+    PROJ_INTERNAL bool omitHorizontalConversionInVertTransformation() const;
 
     PROJ_INTERNAL void setLegacyCRSToCRSContext(bool legacyContext);
     PROJ_INTERNAL bool getLegacyCRSToCRSContext() const;
@@ -869,6 +883,10 @@ class PROJ_GCC_DLL DatabaseContext {
     getNonDeprecated(const std::string &tableName, const std::string &authName,
                      const std::string &code) const;
 
+    PROJ_INTERNAL static std::vector<operation::CoordinateOperationNNPtr>
+    getTransformationsForGridName(const DatabaseContextNNPtr &databaseContext,
+                                  const std::string &gridName);
+
     //! @endcond
 
   protected:
@@ -921,6 +939,10 @@ class PROJ_GCC_DLL AuthorityFactory {
     createEllipsoid(const std::string &code) const;
 
     PROJ_DLL datum::DatumNNPtr createDatum(const std::string &code) const;
+
+    PROJ_DLL datum::DatumEnsembleNNPtr
+    createDatumEnsemble(const std::string &code,
+                        const std::string &type = std::string()) const;
 
     PROJ_DLL datum::GeodeticReferenceFrameNNPtr
     createGeodeticDatum(const std::string &code) const;
@@ -1006,6 +1028,12 @@ class PROJ_GCC_DLL AuthorityFactory {
         /** Object of type operation::ConcatenatedOperation (and derived
            classes) */
         CONCATENATED_OPERATION,
+        /** Object of type datum::DynamicGeodeticReferenceFrame */
+        DYNAMIC_GEODETIC_REFERENCE_FRAME,
+        /** Object of type datum::DynamicVerticalReferenceFrame */
+        DYNAMIC_VERTICAL_REFERENCE_FRAME,
+        /** Object of type datum::DatumEnsemble */
+        DATUM_ENSEMBLE,
     };
 
     PROJ_DLL std::set<std::string>
@@ -1172,6 +1200,15 @@ class PROJ_GCC_DLL AuthorityFactory {
         const metadata::ExtentPtr &intersectingExtent1,
         const metadata::ExtentPtr &intersectingExtent2) const;
 
+    typedef std::pair<common::IdentifiedObjectNNPtr, std::string>
+        PairObjectName;
+    PROJ_INTERNAL std::list<PairObjectName>
+    createObjectsFromNameEx(const std::string &name,
+                            const std::vector<ObjectType> &allowedObjectTypes =
+                                std::vector<ObjectType>(),
+                            bool approximateMatch = true,
+                            size_t limitResultCount = 0) const;
+
     //! @endcond
 
   protected:
@@ -1190,6 +1227,18 @@ class PROJ_GCC_DLL AuthorityFactory {
 
   private:
     PROJ_OPAQUE_PRIVATE_DATA
+
+    PROJ_INTERNAL void
+    createGeodeticDatumOrEnsemble(const std::string &code,
+                                  datum::GeodeticReferenceFramePtr &outDatum,
+                                  datum::DatumEnsemblePtr &outDatumEnsemble,
+                                  bool turnEnsembleAsDatum) const;
+
+    PROJ_INTERNAL void
+    createVerticalDatumOrEnsemble(const std::string &code,
+                                  datum::VerticalReferenceFramePtr &outDatum,
+                                  datum::DatumEnsemblePtr &outDatumEnsemble,
+                                  bool turnEnsembleAsDatum) const;
 };
 
 // ---------------------------------------------------------------------------

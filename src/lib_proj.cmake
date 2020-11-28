@@ -134,6 +134,7 @@ set(SRC_LIBPROJ_PROJECTIONS
   projections/gn_sinu.cpp
   projections/goode.cpp
   projections/igh.cpp
+  projections/igh_o.cpp
   projections/hatano.cpp
   projections/loxim.cpp
   projections/mbt_fps.cpp
@@ -163,6 +164,7 @@ set(SRC_LIBPROJ_PROJECTIONS
   projections/natearth2.cpp
   projections/calcofi.cpp
   projections/eqearth.cpp
+  projections/col_urban.cpp
 )
 
 set(SRC_LIBPROJ_CONVERSIONS
@@ -185,6 +187,7 @@ set(SRC_LIBPROJ_TRANSFORMATIONS
   transformations/vgridshift.cpp
   transformations/xyzgridshift.cpp
   transformations/defmodel.cpp
+  transformations/tinshift.cpp
 )
 
 set(SRC_LIBPROJ_ISO19111
@@ -214,11 +217,10 @@ set(SRC_LIBPROJ_CORE
   dmstor.cpp
   ell_set.cpp
   ellps.cpp
-  errno.cpp
   factors.cpp
-  fileapi.cpp
   fwd.cpp
   gauss.cpp
+  generic_inverse.cpp
   geodesic.c
   init.cpp
   initcache.cpp
@@ -242,10 +244,8 @@ set(SRC_LIBPROJ_CORE
   rtodms.cpp
   strerrno.cpp
   strtod.cpp
-  transform.cpp
   tsfn.cpp
   units.cpp
-  utils.cpp
   wkt1_generated_parser.c
   wkt1_generated_parser.h
   wkt1_parser.cpp
@@ -271,7 +271,6 @@ set(SRC_LIBPROJ_CORE
 )
 
 set(HEADERS_LIBPROJ
-  proj_api.h
   proj.h
   proj_experimental.h
   proj_constants.h
@@ -300,8 +299,6 @@ source_group("CMake Files" FILES CMakeLists.txt)
 
 # Embed PROJ_LIB data files location
 add_definitions(-DPROJ_LIB="${CMAKE_INSTALL_PREFIX}/${DATADIR}")
-
-add_definitions(-DTARGET_CLONES_FMA_ALLOWED)
 
 #################################################
 ## targets: libproj and proj_config.h

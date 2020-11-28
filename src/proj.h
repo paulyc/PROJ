@@ -119,8 +119,8 @@
 
 #include <stddef.h>  /* For size_t */
 
-#ifdef PROJ_API_H
-#error proj.h must be included before proj_api.h
+#ifdef ACCEPT_USE_OF_DEPRECATED_PROJ_API_H
+  #error "The proj_api.h header has been removed from PROJ with version 8.0.0"
 #endif
 
 #ifdef PROJ_RENAME_SYMBOLS
@@ -170,8 +170,8 @@ extern "C" {
 #endif
 
 /* The version numbers should be updated with every release! **/
-#define PROJ_VERSION_MAJOR 7
-#define PROJ_VERSION_MINOR 1
+#define PROJ_VERSION_MAJOR 8
+#define PROJ_VERSION_MINOR 0
 #define PROJ_VERSION_PATCH 0
 
 extern char const PROJ_DLL pj_release[]; /* global release id string */
@@ -340,9 +340,9 @@ typedef enum PJ_LOG_LEVEL {
 typedef void (*PJ_LOG_FUNCTION)(void *, int, const char *);
 
 
-/* The context type - properly namespaced synonym for projCtx */
-struct projCtx_t;
-typedef struct projCtx_t PJ_CONTEXT;
+/* The context type - properly namespaced synonym for pj_ctx */
+struct pj_ctx;
+typedef struct pj_ctx PJ_CONTEXT;
 
 /* A P I */
 
@@ -361,13 +361,14 @@ typedef struct projCtx_t PJ_CONTEXT;
 #endif
 PJ_CONTEXT PROJ_DLL *proj_context_create (void);
 PJ_CONTEXT PROJ_DLL *proj_context_destroy (PJ_CONTEXT *ctx);
+PJ_CONTEXT PROJ_DLL *proj_context_clone (PJ_CONTEXT *ctx);
 
 /** Callback to resolve a filename to a full path */
 typedef const char* (*proj_file_finder) (PJ_CONTEXT *ctx, const char*, void* user_data);
 
 void PROJ_DLL proj_context_set_file_finder(PJ_CONTEXT *ctx, proj_file_finder finder, void* user_data);
 void PROJ_DLL proj_context_set_search_paths(PJ_CONTEXT *ctx, int count_paths, const char* const* paths);
-
+void PROJ_DLL proj_context_set_ca_bundle_path(PJ_CONTEXT *ctx, const char *path);
 void PROJ_DLL proj_context_use_proj4_init_rules(PJ_CONTEXT *ctx, int enable);
 int PROJ_DLL proj_context_get_use_proj4_init_rules(PJ_CONTEXT *ctx, int from_legacy_code_path);
 
@@ -546,7 +547,9 @@ PJ PROJ_DLL *proj_create_crs_to_crs_from_pj(PJ_CONTEXT *ctx,
                                             const PJ *target_crs,
                                             PJ_AREA *area,
                                             const char* const *options);
+/*! @endcond Doxygen_Suppress */
 PJ PROJ_DLL *proj_normalize_for_visualization(PJ_CONTEXT *ctx, const PJ* obj);
+/*! @cond Doxygen_Suppress */
 void PROJ_DLL proj_assign_context(PJ* pj, PJ_CONTEXT* ctx);
 PJ PROJ_DLL *proj_destroy (PJ *P);
 
@@ -691,7 +694,8 @@ typedef enum
     PJ_CATEGORY_PRIME_MERIDIAN,
     PJ_CATEGORY_DATUM,
     PJ_CATEGORY_CRS,
-    PJ_CATEGORY_COORDINATE_OPERATION
+    PJ_CATEGORY_COORDINATE_OPERATION,
+    PJ_CATEGORY_DATUM_ENSEMBLE
 } PJ_CATEGORY;
 
 /** \brief Object type. */
@@ -733,6 +737,10 @@ typedef enum
     PJ_TYPE_TRANSFORMATION,
     PJ_TYPE_CONCATENATED_OPERATION,
     PJ_TYPE_OTHER_COORDINATE_OPERATION,
+
+    PJ_TYPE_TEMPORAL_DATUM,
+    PJ_TYPE_ENGINEERING_DATUM,
+    PJ_TYPE_PARAMETRIC_DATUM,
 } PJ_TYPE;
 
 /** Comparison criterion. */
@@ -1242,6 +1250,23 @@ PJ PROJ_DLL *proj_crs_get_horizontal_datum(PJ_CONTEXT *ctx, const PJ *crs);
 PJ PROJ_DLL *proj_crs_get_sub_crs(PJ_CONTEXT *ctx, const PJ *crs, int index);
 
 PJ PROJ_DLL *proj_crs_get_datum(PJ_CONTEXT *ctx, const PJ *crs);
+
+PJ PROJ_DLL *proj_crs_get_datum_ensemble(PJ_CONTEXT *ctx, const PJ *crs);
+
+PJ PROJ_DLL *proj_crs_get_datum_forced(PJ_CONTEXT *ctx, const PJ *crs);
+
+int PROJ_DLL proj_datum_ensemble_get_member_count(PJ_CONTEXT *ctx,
+                                                  const PJ *datum_ensemble);
+
+double PROJ_DLL proj_datum_ensemble_get_accuracy(PJ_CONTEXT *ctx,
+                                                 const PJ *datum_ensemble);
+
+PJ PROJ_DLL *proj_datum_ensemble_get_member(PJ_CONTEXT *ctx,
+                                            const PJ *datum_ensemble,
+                                            int member_index);
+
+double PROJ_DLL proj_dynamic_datum_get_frame_reference_epoch(PJ_CONTEXT *ctx,
+                                                     const PJ *datum);
 
 PJ PROJ_DLL *proj_crs_get_coordinate_system(PJ_CONTEXT *ctx, const PJ *crs);
 

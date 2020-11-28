@@ -13,6 +13,14 @@ Threading contexts
 
     :returns: a new context
 
+.. c:function:: PJ_CONTEXT* proj_context_clone(PJ_CONTEXT *ctx)
+
+    .. versionadded:: 7.2
+
+    Create a new threading-context based on an existing context.
+
+    :returns: a new context
+
 .. c:function:: void proj_context_destroy(PJ_CONTEXT *ctx)
 
     Deallocate a threading-context.
@@ -37,11 +45,15 @@ paragraph for more details.
     - a WKT string,
     - an object code (like "EPSG:4326", "urn:ogc:def:crs:EPSG::4326",
       "urn:ogc:def:coordinateOperation:EPSG::1671"),
+    - an Object name. e.g "WGS 84", "WGS 84 / UTM zone 31N". In that case as
+      uniqueness is not guaranteed, heuristics are applied to determine the appropriate best match.
     - a OGC URN combining references for compound coordinate reference systems
       (e.g "urn:ogc:def:crs,crs:EPSG::2393,crs:EPSG::5717" or custom abbreviated
       syntax "EPSG:2393+5717"),
     - a OGC URN combining references for concatenated operations
       (e.g. "urn:ogc:def:coordinateOperation,coordinateOperation:EPSG::3895,coordinateOperation:EPSG::1618")
+    - a PROJJSON string. The jsonschema is at https://proj.org/schemas/v0.2/projjson.schema.json (*added in 6.2*)
+    - a compound CRS made from two object names separated with " + ". e.g. "WGS 84 + EGM96 height" (*added in 7.1*)
 
     Example call:
 
@@ -172,26 +184,8 @@ paragraph for more details.
 
     :param `options`: should be set to NULL currently.
 
-.. c:function:: PJ *proj_normalize_for_visualization(PJ_CONTEXT *ctx, const PJ* obj)
-
-    .. versionadded:: 6.1.0
-
-    Returns a PJ* object whose axis order is the one expected for
-    visualization purposes.
-
-    The input object must be a coordinate operation, that has been created with
-    proj_create_crs_to_crs().
-    If the axis order of its source or target CRS is northing,easting, then an
-    axis swap operation will be inserted.
-
-    The returned :c:type:`PJ`-pointer should be deallocated with :c:func:`proj_destroy`.
-
-    :param ctx: Threading context.
-    :type ctx: :c:type:`PJ_CONTEXT` *
-    :param `obj`: Object of type CoordinateOperation
-    :type `obj`: const :c:type:`PJ` *
-    :returns: :c:type:`PJ` *
-
+.. doxygenfunction:: proj_normalize_for_visualization
+   :project: doxygen_api
 
 .. c:function:: PJ* proj_destroy(PJ *P)
 

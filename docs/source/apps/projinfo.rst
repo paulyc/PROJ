@@ -16,7 +16,7 @@ Synopsis
 ********
 
     | **projinfo**
-    |    [-o formats] [-k crs|operation|datum|ellipsoid] [--summary] [-q]
+    |    [-o formats] [-k crs|operation|datum|ensemble|ellipsoid] [--summary] [-q]
     |    [[--area name_or_code] | [--bbox west_long,south_lat,east_long,north_lat]]
     |    [--spatial-test contains|intersects]
     |    [--crs-extent-use none|both|intersection|smallest]
@@ -31,7 +31,8 @@ Synopsis
     |    {object_reference} | (-s {srs_def} -t {srs_def})
     |
 
-    where {object_definition} or {srs_def} is
+    where {object_definition} or {srs_def} is one of the possibilities accepted
+    by :c:func:`proj_create`
 
     - a proj-string,
     - a WKT string,
@@ -48,7 +49,7 @@ Synopsis
       (*added in 6.2*)
     - a OGC URN combining references for concatenated operations
       (e.g. "urn:ogc:def:coordinateOperation,coordinateOperation:EPSG::3895,coordinateOperation:EPSG::1618")
-    - a PROJJSON string. The jsonschema is at https://proj.org/schemas/v0.1/projjson.schema.json (*added in 6.2*)
+    - a PROJJSON string. The jsonschema is at https://proj.org/schemas/v0.2/projjson.schema.json (*added in 6.2*)
     - a compound CRS made from two object names separated with " + ". e.g. "WGS 84 + EGM96 height" (*added in 7.1*)
 
     {object_reference} is a filename preceded by the '@' character.  The
@@ -85,7 +86,7 @@ The following control parameters can appear in any order:
     .. note:: Before PROJ 6.3.0, WKT1:GDAL was implicitly calling --boundcrs-to-wgs84.
               This is no longer the case.
 
-.. option:: -k crs|operation|datum|ellipsoid
+.. option:: -k crs|operation|datum|ensemble|ellipsoid
 
     When used to query a single object with a AUTHORITY:CODE, determines the (k)ind of the object
     in case there are CRS, coordinate operations or ellipsoids with the same CODE.
@@ -259,8 +260,8 @@ The following control parameters can appear in any order:
 
 .. option:: --single-line
 
-    Output WKT or PROJJSON strings on a single line, instead of multiple intended lines by
-    default.
+    Output PROJ, WKT or PROJJSON strings on a single line, instead of multiple
+    indented lines by default.
 
 .. option:: --searchpaths
 
