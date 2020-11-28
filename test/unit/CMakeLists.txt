@@ -69,17 +69,6 @@ set(PROJ_TEST_ENVIRONMENT
   "PROJ_SOURCE_DATA=${PROJ_SOURCE_DIR}/data"
 )
 
-add_executable(proj_pj_transform_test
-  main.cpp
-  pj_transform_test.cpp)
-target_link_libraries(proj_pj_transform_test
-  GTest::gtest
-  ${PROJ_LIBRARIES})
-add_test(NAME proj_pj_transform_test COMMAND proj_pj_transform_test)
-set_property(TEST proj_pj_transform_test
-  PROPERTY ENVIRONMENT ${PROJ_TEST_ENVIRONMENT})
-
-
 add_executable(proj_errno_string_test
   main.cpp
   proj_errno_string_test.cpp)
@@ -180,4 +169,15 @@ target_link_libraries(test_defmodel
   ${PROJ_LIBRARIES})
 add_test(NAME test_defmodel COMMAND test_defmodel)
 set_property(TEST test_defmodel
+  PROPERTY ENVIRONMENT ${PROJ_TEST_ENVIRONMENT})
+
+
+add_executable(test_tinshift
+  main.cpp
+  test_tinshift.cpp)
+target_link_libraries(test_tinshift
+  GTest::gtest
+  ${PROJ_LIBRARIES})
+add_test(NAME test_tinshift COMMAND test_tinshift)
+set_property(TEST test_tinshift
   PROPERTY ENVIRONMENT ${PROJ_TEST_ENVIRONMENT})

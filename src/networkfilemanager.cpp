@@ -1315,7 +1315,7 @@ std::unique_ptr<File> NetworkFile::open(PJ_CONTEXT *ctx, const char *filename) {
             errorBuffer.resize(strlen(errorBuffer.data()));
             pj_log(ctx, PJ_LOG_ERROR, "Cannot open %s: %s", filename,
                    errorBuffer.c_str());
-            pj_ctx_set_errno(ctx, PJD_ERR_NETWORK_ERROR);
+            proj_context_errno_set(ctx, PJD_ERR_NETWORK_ERROR);
         }
 
         bool ok = false;
@@ -1404,7 +1404,7 @@ size_t NetworkFile::read(void *buffer, size_t sizeBytes) {
                     &nRead, errorBuffer.size(), &errorBuffer[0],
                     m_ctx->networking.user_data);
                 if (!m_handle) {
-                    pj_ctx_set_errno(m_ctx, PJD_ERR_NETWORK_ERROR);
+                    proj_context_errno_set(m_ctx, PJD_ERR_NETWORK_ERROR);
                     return 0;
                 }
             } else {
@@ -1420,7 +1420,7 @@ size_t NetworkFile::read(void *buffer, size_t sizeBytes) {
                     pj_log(m_ctx, PJ_LOG_ERROR, "Cannot read in %s: %s",
                            m_url.c_str(), errorBuffer.c_str());
                 }
-                pj_ctx_set_errno(m_ctx, PJD_ERR_NETWORK_ERROR);
+                proj_context_errno_set(m_ctx, PJD_ERR_NETWORK_ERROR);
                 return 0;
             }
 
@@ -1522,7 +1522,8 @@ struct CurlFileHandle {
     CurlFileHandle(const CurlFileHandle &) = delete;
     CurlFileHandle &operator=(const CurlFileHandle &) = delete;
 
-    explicit CurlFileHandle(const char *url, CURL *handle);
+    explicit CurlFileHandle(const char *url, CURL *handle,
+                            const char *ca_bundle_path);
     ~CurlFileHandle();
 
     static PROJ_NETWORK_HANDLE *
@@ -1594,7 +1595,8 @@ static std::string GetExecutableName() {
 
 // ---------------------------------------------------------------------------
 
-CurlFileHandle::CurlFileHandle(const char *url, CURL *handle)
+CurlFileHandle::CurlFileHandle(const char *url, CURL *handle,
+                               const char *ca_bundle_path)
     : m_url(url), m_handle(handle) {
     curl_easy_setopt(handle, CURLOPT_URL, m_url.c_str());
 
@@ -1613,6 +1615,23 @@ CurlFileHandle::CurlFileHandle(const char *url, CURL *handle)
     if (getenv("PROJ_UNSAFE_SSL")) {
         curl_easy_setopt(handle, CURLOPT_SSL_VERIFYPEER, 0L);
         curl_easy_setopt(handle, CURLOPT_SSL_VERIFYHOST, 0L);
+    }
+
+    // Custom path to SSL certificates.
+    if (ca_bundle_path == nullptr) {
+        ca_bundle_path = getenv("PROJ_CURL_CA_BUNDLE");
+    }
+    if (ca_bundle_path == nullptr) {
+        // Name of environment variable used by the curl binary
+        ca_bundle_path = getenv("CURL_CA_BUNDLE");
+    }
+    if (ca_bundle_path == nullptr) {
+        // Name of environment variable used by the curl binary (tested
+        // after CURL_CA_BUNDLE
+        ca_bundle_path = getenv("SSL_CERT_FILE");
+    }
+    if (ca_bundle_path != nullptr) {
+        curl_easy_setopt(handle, CURLOPT_CAINFO, ca_bundle_path);
     }
 
     curl_easy_setopt(handle, CURLOPT_ERRORBUFFER, m_szCurlErrBuf);
@@ -1682,8 +1701,9 @@ PROJ_NETWORK_HANDLE *CurlFileHandle::open(PJ_CONTEXT *ctx, const char *url,
     if (!hCurlHandle)
         return nullptr;
 
-    auto file =
-        std::unique_ptr<CurlFileHandle>(new CurlFileHandle(url, hCurlHandle));
+    auto file = std::unique_ptr<CurlFileHandle>(new CurlFileHandle(
+        url, hCurlHandle,
+        ctx->ca_bundle_path.empty() ? nullptr : ctx->ca_bundle_path.c_str()));
 
     double oldDelay = MIN_RETRY_DELAY_MS;
     std::string headers;
